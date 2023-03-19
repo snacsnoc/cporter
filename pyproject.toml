@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "CPorter"
+version = "0.0.1"
+authors = [
+  { name="Easton Elliott", email="easton@geekness.eu" },
+]
+description = "CPorter simplifies the process of compiling, loading, and calling C functions from Python by automatically handling C types and providing performance profiling utilities."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU GPLv3 License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/snacsnoc/cporter"
+"Bug Tracker" = "https://github.com/snacsnoc/cporter/issues"
