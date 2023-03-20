@@ -2,8 +2,10 @@ name: Lint
 
 on:
   push:
+    paths-ignore:
+      - 'examples/**'
     paths:
-      - './src/cporter/*.py'
+      - '*.py'
 
 jobs:
   mypy:
