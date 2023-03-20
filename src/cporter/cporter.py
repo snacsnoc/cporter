@@ -148,8 +148,6 @@ class CPorter:
         )
         return c_function
 
-    #        return func
-
     # Reads the C source code to determine the argument and return types of the specified function
     def get_function_types(
         self, lib_name: str, func_name: str
