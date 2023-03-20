@@ -27,7 +27,6 @@ class CStringWrapper:
         libc.free(ctypes.addressof(c_string_buffer))
 
 
-
 class CFunctionWrapper:
     # _argtypes: CData isn't callable ( but _SimpleCData is)
     # we call CFunctionWrapper with a ctype._CData list, so Type[Any] is used to get around this
