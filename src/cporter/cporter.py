@@ -108,7 +108,7 @@ class CPorter:
                 raise RuntimeError(
                     "No suitable C compiler found. Please ensure that either 'gcc' or 'clang' is installed and available in the PATH."
                 )
-
+        # TODO: do something with the output files
         result = subprocess.run(
             [
                 compiler,
