@@ -85,7 +85,7 @@ class CPorter:
         self, lib_name: str, func_name: str
     ) -> Tuple[List[Optional[Type[ctypes._SimpleCData]]], Optional[Type[ctypes._SimpleCData]]]:
 
-        with open(f"examples/lib/{lib_name}.c", "r") as f:
+        with open(f"{self.lib_path}/{lib_name}.c", "r") as f:
             c_code = f.read()
 
         pattern = r"(\w+)\s+" + re.escape(func_name) + r"\s*\((?:([\w\s,*]+))?\)"
