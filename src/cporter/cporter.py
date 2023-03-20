@@ -9,11 +9,6 @@ import shutil
 
 T = TypeVar("T")
 
-# Convert ctypes function object
-# class CFunction(Protocol):
-#     __call__: Callable[..., Any]
-#     argtypes: List[Type[ctypes._SimpleCData]]
-#     restype: Optional[Type[ctypes._SimpleCData]]
 
 
 class CFunctionWrapper:
@@ -21,17 +16,16 @@ class CFunctionWrapper:
     # we call CFunctionWrapper with a ctype._CData list, so Type[Any] is used to get around this
     #
     def __init__(
-        self,
-        func: Callable[..., Any],
-        argtypes: List[Type[Any]],
-        restype: Optional[Type[ctypes._SimpleCData]],
-        doc: Optional[str] = None,
+            self,
+            func: Callable[..., Any],
+            argtypes: List[Type[Any]],
+            restype: Optional[Type[ctypes._SimpleCData]],
+            doc: Optional[str] = None,
+
     ):
         self.func = func
         self.argtypes = argtypes
         self.restype = restype
-        if restype is not None:
-            self.python_equivalent = restype().value.__class__
         self.__doc__ = doc
 
     def __call__(self, *args: Any) -> Any:
@@ -127,14 +121,19 @@ class CPorter:
             func.__doc__ = documentation
 
         # Wrap the ctypes function object as an instance of CFunctionWrapper
-        c_function = CFunctionWrapper(func, func.argtypes, func.restype, func.__doc__)
+        c_function = CFunctionWrapper(
+            func=func,
+            argtypes=func.argtypes,
+            restype=func.restype,
+            doc=func.__doc__
+        )
         return c_function
 
     #        return func
 
     # Reads the C source code to determine the argument and return types of the specified function
     def get_function_types(
-        self, lib_name: str, func_name: str
+            self, lib_name: str, func_name: str
     ) -> Tuple[
         List[Optional[Type[ctypes._SimpleCData]]], Optional[Type[ctypes._SimpleCData]]
     ]:
@@ -179,18 +178,19 @@ class CPorter:
         result = func(*converted_args)
 
         # Check return type
-        if func.restype is not None and not isinstance(result, func.restype) and not isinstance(
-            result, c_function.restype.python_equivalent
-        ):
-            raise TypeError(
-                f"Return value of function '{func_name}' in library '{lib_name}' "
-                f"must be of type '{func.restype.__name__}', but received '{type(result).__name__}'."
-            )
+        if func.restype is not None:
+            if not isinstance(result, func.restype):
+                python_equivalent = type(func.restype().value)
+                if not isinstance(result, python_equivalent):
+                    raise TypeError(
+                        f"Return value of function '{func_name}' in library '{lib_name}' "
+                        f"must be of type '{func.restype.__name__}', but received '{type(result).__name__}'."
+                    )
 
         return result
 
     def profile_function(
-        self, lib_name: str, func_name: str, *args
+            self, lib_name: str, func_name: str, *args
     ) -> Tuple[Any, float]:
         start_time = time.perf_counter()
         result = self.execute_function(lib_name, func_name, *args)
@@ -200,7 +200,7 @@ class CPorter:
         return result, elapsed_time
 
     def profile_python_function(
-        self, func: Callable[..., T], *args: Any
+            self, func: Callable[..., T], *args: Any
     ) -> Tuple[T, float]:
         start_time = timeit.default_timer()
         result = func(*args)
@@ -208,7 +208,7 @@ class CPorter:
         return result, elapsed_time
 
     def get_function_documentation(
-        self, lib_name: str, func_name: str
+            self, lib_name: str, func_name: str
     ) -> Optional[str]:
         with open(f"{self.lib_path}/{lib_name}.c", "r") as f:
             c_code = f.read()
