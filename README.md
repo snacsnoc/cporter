@@ -13,16 +13,21 @@ It simplifies the process of compiling, loading, and calling C functions from Py
 * Automatic memory management for C code allocating memory using malloc (don't rely on this)
 
 ## Installation
-To use CPorter in your project, simply clone the repository and import the cporter module.
+To use CPorter in your project, install from pip or by cloning.
+```bash
+pip install -i https://test.pypi.org/simple/ cporter
+```
+or
 
 ```
 git clone https://github.com/snacsnoc/cporter.git
 ```
+and add the `src/` to your Python lib path
 ## Usage
 Here's an example of using CPorter to load and call a C function:
 
 ```python
-from cporter import CPorter
+from cporter.cporter import CPorter
 
 # Create a CPorter instance and load the library
 cporter = CPorter()
@@ -38,7 +43,7 @@ result = c_function(arg1, arg2)
 CPorter also supports performance profiling for both C and Python functions. Here's an example of profiling a C function:
 
 ```python
-from cporter import CPorter
+from cporter.cporter import CPorter
 
 cporter = CPorter()
 cporter.set_library_path("lib")
@@ -50,7 +55,7 @@ print(f"Elapsed time: {elapsed_time:.6f} seconds")
 For profiling Python functions, you can use the `profile_python_function` method:
 
 ```python
-from cporter import CPorter
+from cporter.cporter import CPorter
 
 cporter = CPorter()
 
@@ -67,7 +72,7 @@ CPorter supports multithreading to run C and Python functions concurrently. Here
 ```python
 import ctypes
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from cporter import CPorter
+from cporter.cporter import CPorter
 
 cporter = CPorter()
 cporter.set_library_path("lib")
@@ -131,7 +136,7 @@ print(result)  # The result is automatically converted back to a Python value
 
 ```
 ## Examples
-Call two difference functions with arguments example: `python examples/run.py`
+Call two different functions with arguments example: `python examples/run.py`
 
 Multithreading example: `python examples/multithreading.py`
 
