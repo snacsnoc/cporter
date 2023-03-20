@@ -1,5 +1,5 @@
 # CPorter
-CPorter is a statically-typed Python library using ctypes that makes it easy to integrate C code into your Python projects. 
+CPorter is a Python library using ctypes that makes it easy to integrate C code into your Python projects. 
 It simplifies the process of compiling, loading, and calling C functions from Python by automatically handling C types and providing performance profiling utilities.
 
 
@@ -9,6 +9,8 @@ It simplifies the process of compiling, loading, and calling C functions from Py
 * Simplified function calling syntax in Python
 * Multithreading support
 * Performance profiling for both C and Python functions
+* Get C function documentation from source code(/* Text */)
+* Automatic memory management for C code allocating memory using malloc (don't rely on this)
 
 ## Installation
 To use CPorter in your project, simply clone the repository and import the cporter module.
