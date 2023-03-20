@@ -63,6 +63,7 @@ class CPorter:
             "double": ctypes.c_double,
             "long double": ctypes.c_longdouble,
             "char": ctypes.c_char,
+            "char*": ctypes.c_char_p,
             "unsigned char": ctypes.c_ubyte,
             "bool": ctypes.c_bool,
             "void": None,
