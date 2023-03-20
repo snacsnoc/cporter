@@ -67,6 +67,19 @@ class CPorter:
             "unsigned char": ctypes.c_ubyte,
             "bool": ctypes.c_bool,
             "void": None,
+            "void*": ctypes.c_void_p,
+            "size_t": ctypes.c_size_t,
+            "ptrdiff_t": ctypes.c_ptrdiff_t,
+            "intptr_t": ctypes.c_intptr_t,
+            "uintptr_t": ctypes.c_uintptr_t,
+            "int8_t": ctypes.c_int8,
+            "uint8_t": ctypes.c_uint8,
+            "int16_t": ctypes.c_int16,
+            "uint16_t": ctypes.c_uint16,
+            "int32_t": ctypes.c_int32,
+            "uint32_t": ctypes.c_uint32,
+            "int64_t": ctypes.c_int64,
+            "uint64_t": ctypes.c_uint64,
         }
 
     # Compiles and loads the library with the given name
