@@ -78,12 +78,18 @@ class CPorter:
         # Filter out None values
         func.argtypes = [t for t in argtypes if t is not None]
         func.restype = restype
+        # Attach the function documentation as a docstring
+        documentation = self.get_function_documentation(lib_name, func_name)
+        if documentation:
+            func.__doc__ = documentation
         return func
 
     # Reads the C source code to determine the argument and return types of the specified function
     def get_function_types(
         self, lib_name: str, func_name: str
-    ) -> Tuple[List[Optional[Type[ctypes._SimpleCData]]], Optional[Type[ctypes._SimpleCData]]]:
+    ) -> Tuple[
+        List[Optional[Type[ctypes._SimpleCData]]], Optional[Type[ctypes._SimpleCData]]
+    ]:
 
         with open(f"{self.lib_path}/{lib_name}.c", "r") as f:
             c_code = f.read()
@@ -117,7 +123,6 @@ class CPorter:
         elapsed_time = end_time - start_time
         return result, elapsed_time
 
-
     def profile_python_function(
         self, func: Callable[..., T], *args: Any
     ) -> Tuple[T, float]:
@@ -125,3 +130,22 @@ class CPorter:
         result = func(*args)
         elapsed_time = timeit.default_timer() - start_time
         return result, elapsed_time
+
+    def get_function_documentation(
+        self, lib_name: str, func_name: str
+    ) -> Optional[str]:
+        with open(f"examples/lib/{lib_name}.c", "r") as f:
+            c_code = f.read()
+
+        # Match comments preceding function definitions
+        pattern = r"(?s)(/\*[\s\S]*?\*/\s*)?(\w+)\s+" + re.escape(func_name) + r"\s*\("
+        match = re.search(pattern, c_code)
+
+        if match:
+            comment = match.group(1)
+            if comment is not None:
+                # Remove comment delimiters and leading/trailing whitespace
+                documentation = re.sub(r"^\s*/\*|\*/\s*$", "", comment).strip()
+                return documentation
+
+        return None
