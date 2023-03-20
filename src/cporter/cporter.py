@@ -5,6 +5,7 @@ import subprocess
 import time
 import timeit
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TypeVar, Type
+import shutil
 
 T = TypeVar("T")
 
@@ -67,14 +68,28 @@ class CPorter:
     # Compiles the C library into a shared object (.so) file
     @staticmethod
     def compile_library(self, lib_name: str) -> None:
+        # Check if the CC environment variable is set
+        compiler = os.environ.get("CC")
+
+        if compiler is None:
+            # Check if 'gcc' is available
+            if shutil.which("gcc"):
+                compiler = "gcc"
+            # Check if 'clang' is available
+            elif shutil.which("clang"):
+                compiler = "clang"
+            else:
+                raise RuntimeError(
+                    "No suitable C compiler found. Please ensure that either 'gcc' or 'clang' is installed and available in the PATH.")
+
         result = subprocess.run(
-            ["gcc", "-shared", "-o", f"{lib_name}.so", f"{self.lib_path}/{lib_name}.c"],
+            [compiler, "-shared", "-o", f"{lib_name}.so", f"{self.lib_path}/{lib_name}.c"],
             stderr=subprocess.PIPE,
         )
 
         if result.returncode != 0:
             raise RuntimeError(
-                f"Failed to compile library '{lib_name}'. GCC returned the following error:\n{result.stderr.decode('utf-8')}"
+                f"Failed to compile library '{lib_name}'. {compiler} returned the following error:\n{result.stderr.decode('utf-8')}"
             )
 
     # Loads the compiled C library as a shared object using ctypes
