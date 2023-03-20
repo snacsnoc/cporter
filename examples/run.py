@@ -2,11 +2,11 @@ import sys
 import os
 
 # Add the 'src' directory to the Python import path
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-src_path = os.path.join(project_root, 'src')
-sys.path.insert(0, src_path)
+# project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# src_path = os.path.join(project_root, 'src/cporter')
+# sys.path.insert(0, src_path)
 
-from cporter import CPorter
+from CPorter import CPorter
 
 ffi_test = CPorter()
 
@@ -21,6 +21,15 @@ fib_n = ffi_test.get_function("fib", "fibonacci_iterative")
 
 # Call the function with arguments
 result = example_function(42)
+
+# Retrieve the docstring for example_function
+docstring = example_function.__doc__
+if docstring:
+    print("Documentation for example_function:")
+    print(docstring)
+else:
+    print("No documentation found for example_function.")
+
 print("Result:", result)
 
 # Calculate the nth Fibonacci number

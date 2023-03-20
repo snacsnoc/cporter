@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-// Get the nth fibonacci number
+/* Get the nth fibonacci number */
 long long fibonacci_iterative(int n)
 {
     if (n <= 1) {

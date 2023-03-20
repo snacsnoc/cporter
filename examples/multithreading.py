@@ -3,12 +3,12 @@ import os
 import ctypes
 
 # Add the 'src' directory to the Python import path
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-src_path = os.path.join(project_root, 'src')
-sys.path.insert(0, src_path)
+# project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# src_path = os.path.join(project_root, 'src/cporter')
+# sys.path.insert(0, src_path)
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from cporter import CPorter
+from CPorter import CPorter
 
 # Create a CPorter instance and load the library
 cporter = CPorter()
