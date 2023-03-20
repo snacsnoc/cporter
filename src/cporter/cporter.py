@@ -11,14 +11,21 @@ T = TypeVar("T")
 
 
 # Simplify C memory management by automatically deallocate memory when the objects are garbage collected
-class CIntWrapper:
-    def __init__(self, value: int):
-        self._as_parameter_ = ctypes.c_int(value)
+class CStringWrapper:
+    def __init__(self, value: bytes):
+        self._as_parameter_ = ctypes.create_string_buffer(value)
 
     def __del__(self):
-        # Free memory here
-        # function_to_free_memory(self._as_parameter_)
-        pass
+        self.function_to_free_memory(self._as_parameter_)
+
+    @staticmethod
+    def function_to_free_memory(c_string_buffer):
+        # We are assuming the user used malloc()
+        libc = ctypes.CDLL(ctypes.util.find_library("c"))
+        libc.free.argtypes = [ctypes.c_void_p]
+        libc.free.restype = None
+        libc.free(ctypes.addressof(c_string_buffer))
+
 
 
 class CFunctionWrapper:
@@ -175,8 +182,8 @@ class CPorter:
         # Convert Python types to ctypes equivalents
         converted_args = []
         for i, (arg, ctype) in enumerate(zip(args, func.argtypes)):
-            if ctype == ctypes.c_int:
-                converted_arg = CIntWrapper(arg)
+            if ctype == ctypes.c_char_p:
+                converted_arg = CStringWrapper(arg)
             elif not isinstance(arg, ctype):
                 try:
                     converted_arg = ctype(arg)
