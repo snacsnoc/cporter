@@ -8,6 +8,25 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TypeVar, T
 
 T = TypeVar("T")
 
+# Convert ctypes function object
+# class CFunction(Protocol):
+#     __call__: Callable[..., Any]
+#     argtypes: List[Type[ctypes._SimpleCData]]
+#     restype: Optional[Type[ctypes._SimpleCData]]
+
+
+class CFunctionWrapper:
+    #_argtypes: CData isn't callable ( but _SimpleCData is)
+    # we call CFunctionWrapper with a ctype._CData list, so Type[Any] is used to get around this
+    #
+    def __init__(self, func: Callable[..., Any], argtypes: List[Type[Any]], restype: Optional[Type[ctypes._SimpleCData]]):
+        self.func = func
+        self.argtypes = argtypes
+        self.restype = restype
+
+    def __call__(self, *args: Any) -> Any:
+        return self.func(*args)
+
 
 class CPorter:
     def __init__(self) -> None:
@@ -67,7 +86,7 @@ class CPorter:
             )
 
     # Retrieves the function from the specified library and configures its argument and return types
-    def get_function(self, lib_name: str, func_name: str) -> Callable[..., Any]:
+    def get_function(self, lib_name: str, func_name: str) -> CFunctionWrapper:
         lib = self.libraries.get(lib_name)
         if lib is None:
             raise ValueError(f"Library '{lib_name}' not found.")
@@ -82,11 +101,16 @@ class CPorter:
         documentation = self.get_function_documentation(lib_name, func_name)
         if documentation:
             func.__doc__ = documentation
-        return func
+
+        # Wrap the ctypes function object as an instance of CFunctionWrapper
+        c_function = CFunctionWrapper(func, func.argtypes, func.restype)
+        return c_function
+
+    #        return func
 
     # Reads the C source code to determine the argument and return types of the specified function
     def get_function_types(
-        self, lib_name: str, func_name: str
+            self, lib_name: str, func_name: str
     ) -> Tuple[
         List[Optional[Type[ctypes._SimpleCData]]], Optional[Type[ctypes._SimpleCData]]
     ]:
@@ -111,10 +135,36 @@ class CPorter:
 
     def execute_function(self, lib_name: str, func_name: str, *args) -> Any:
         func = self.get_function(lib_name, func_name)
-        return func(*args)
+
+        # Convert Python types to ctypes equivalents
+        converted_args = []
+        for i, (arg, ctype) in enumerate(zip(args, func.argtypes)):
+            if not isinstance(arg, ctype):
+                try:
+                    converted_arg = ctype(arg)
+                except Exception as e:
+                    raise TypeError(
+                        f"Argument {i} of function '{func_name}' in library '{lib_name}' "
+                        f"must be of type '{ctype.__name__}', but received '{type(arg).__name__}'."
+                    ) from e
+            else:
+                converted_arg = arg
+            converted_args.append(converted_arg)
+
+        # Call the function with converted arguments
+        result = func(*converted_args)
+
+        # Check return type
+        if func.restype is not None and not isinstance(result, func.restype):
+            raise TypeError(
+                f"Return value of function '{func_name}' in library '{lib_name}' "
+                f"must be of type '{func.restype.__name__}', but received '{type(result).__name__}'."
+            )
+
+        return result
 
     def profile_function(
-        self, lib_name: str, func_name: str, *args
+            self, lib_name: str, func_name: str, *args
     ) -> Tuple[Any, float]:
         start_time = time.perf_counter()
         result = self.execute_function(lib_name, func_name, *args)
@@ -124,7 +174,7 @@ class CPorter:
         return result, elapsed_time
 
     def profile_python_function(
-        self, func: Callable[..., T], *args: Any
+            self, func: Callable[..., T], *args: Any
     ) -> Tuple[T, float]:
         start_time = timeit.default_timer()
         result = func(*args)
@@ -132,7 +182,7 @@ class CPorter:
         return result, elapsed_time
 
     def get_function_documentation(
-        self, lib_name: str, func_name: str
+            self, lib_name: str, func_name: str
     ) -> Optional[str]:
         with open(f"examples/lib/{lib_name}.c", "r") as f:
             c_code = f.read()
