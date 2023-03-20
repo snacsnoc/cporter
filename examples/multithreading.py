@@ -2,13 +2,14 @@ import sys
 import os
 import ctypes
 
-# Add the 'src' directory to the Python import path
+# Add the 'src/cporter' directory to the Python import path
+# Uncomment this to run from the src directory without installing from pip etc etc
 # project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # src_path = os.path.join(project_root, 'src/cporter')
 # sys.path.insert(0, src_path)
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from CPorter import CPorter
+from cporter.cporter import CPorter
 
 # Create a CPorter instance and load the library
 cporter = CPorter()

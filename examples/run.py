@@ -6,7 +6,7 @@ import os
 # src_path = os.path.join(project_root, 'src/cporter')
 # sys.path.insert(0, src_path)
 
-from CPorter import CPorter
+from cporter.cporter import CPorter
 
 ffi_test = CPorter()
 

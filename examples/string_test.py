@@ -1,11 +1,11 @@
-from CPorter import CPorter, CStringWrapper
+from cporter.cporter import CPorter, CStringWrapper
 
 # Initialize CPorter
 c_porter = CPorter()
 
 # Set the library path to the lib directory
 # Path can be relative or absolute
-c_porter.set_library_path("lib")
+c_porter.set_library_path("examples/lib")
 
 # Compile and load the library
 c_porter.add_library("string_lib")
