@@ -1,4 +1,6 @@
 # CPorter
+[![Mypy check](https://github.com/snacsnoc/cporter/actions/workflows/mypy.yml/badge.svg)](https://github.com/snacsnoc/cporter/actions/workflows/mypy.yml)
+
 CPorter is a Python library using ctypes that makes it easy to integrate C code into your Python projects. 
 It simplifies the process of compiling, loading, and calling C functions from Python by automatically handling C types and providing performance profiling utilities.
 
