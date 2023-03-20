@@ -78,6 +78,7 @@ class CPorter:
         self.lib_path = lib_path
 
     # Compiles the C library into a shared object (.so) file
+    # TODO: add support to .dll
     @staticmethod
     def compile_library(self, lib_name: str) -> None:
         # Check if the CC environment variable is set
@@ -209,6 +210,7 @@ class CPorter:
 
         return result
 
+    # Profile a C function to retrieve total execution time
     def profile_function(
         self, lib_name: str, func_name: str, *args
     ) -> Tuple[Any, float]:
