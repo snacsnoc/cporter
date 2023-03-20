@@ -10,18 +10,27 @@ import shutil
 T = TypeVar("T")
 
 
+# Simplify C memory management by automatically deallocate memory when the objects are garbage collected
+class CIntWrapper:
+    def __init__(self, value: int):
+        self._as_parameter_ = ctypes.c_int(value)
+
+    def __del__(self):
+        # Free memory here
+        # function_to_free_memory(self._as_parameter_)
+        pass
+
 
 class CFunctionWrapper:
     # _argtypes: CData isn't callable ( but _SimpleCData is)
     # we call CFunctionWrapper with a ctype._CData list, so Type[Any] is used to get around this
     #
     def __init__(
-            self,
-            func: Callable[..., Any],
-            argtypes: List[Type[Any]],
-            restype: Optional[Type[ctypes._SimpleCData]],
-            doc: Optional[str] = None,
-
+        self,
+        func: Callable[..., Any],
+        argtypes: List[Type[Any]],
+        restype: Optional[Type[ctypes._SimpleCData]],
+        doc: Optional[str] = None,
     ):
         self.func = func
         self.argtypes = argtypes
@@ -76,10 +85,17 @@ class CPorter:
                 compiler = "clang"
             else:
                 raise RuntimeError(
-                    "No suitable C compiler found. Please ensure that either 'gcc' or 'clang' is installed and available in the PATH.")
+                    "No suitable C compiler found. Please ensure that either 'gcc' or 'clang' is installed and available in the PATH."
+                )
 
         result = subprocess.run(
-            [compiler, "-shared", "-o", f"{lib_name}.so", f"{self.lib_path}/{lib_name}.c"],
+            [
+                compiler,
+                "-shared",
+                "-o",
+                f"{lib_name}.so",
+                f"{self.lib_path}/{lib_name}.c",
+            ],
             stderr=subprocess.PIPE,
         )
 
@@ -122,10 +138,7 @@ class CPorter:
 
         # Wrap the ctypes function object as an instance of CFunctionWrapper
         c_function = CFunctionWrapper(
-            func=func,
-            argtypes=func.argtypes,
-            restype=func.restype,
-            doc=func.__doc__
+            func=func, argtypes=func.argtypes, restype=func.restype, doc=func.__doc__
         )
         return c_function
 
@@ -133,7 +146,7 @@ class CPorter:
 
     # Reads the C source code to determine the argument and return types of the specified function
     def get_function_types(
-            self, lib_name: str, func_name: str
+        self, lib_name: str, func_name: str
     ) -> Tuple[
         List[Optional[Type[ctypes._SimpleCData]]], Optional[Type[ctypes._SimpleCData]]
     ]:
@@ -162,7 +175,9 @@ class CPorter:
         # Convert Python types to ctypes equivalents
         converted_args = []
         for i, (arg, ctype) in enumerate(zip(args, func.argtypes)):
-            if not isinstance(arg, ctype):
+            if ctype == ctypes.c_int:
+                converted_arg = CIntWrapper(arg)
+            elif not isinstance(arg, ctype):
                 try:
                     converted_arg = ctype(arg)
                 except Exception as e:
@@ -190,7 +205,7 @@ class CPorter:
         return result
 
     def profile_function(
-            self, lib_name: str, func_name: str, *args
+        self, lib_name: str, func_name: str, *args
     ) -> Tuple[Any, float]:
         start_time = time.perf_counter()
         result = self.execute_function(lib_name, func_name, *args)
@@ -200,7 +215,7 @@ class CPorter:
         return result, elapsed_time
 
     def profile_python_function(
-            self, func: Callable[..., T], *args: Any
+        self, func: Callable[..., T], *args: Any
     ) -> Tuple[T, float]:
         start_time = timeit.default_timer()
         result = func(*args)
@@ -208,7 +223,7 @@ class CPorter:
         return result, elapsed_time
 
     def get_function_documentation(
-            self, lib_name: str, func_name: str
+        self, lib_name: str, func_name: str
     ) -> Optional[str]:
         with open(f"{self.lib_path}/{lib_name}.c", "r") as f:
             c_code = f.read()
