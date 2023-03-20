@@ -89,6 +89,45 @@ with ThreadPoolExecutor() as executor:
 
 # Process the results as needed
 ```
+
+## Function Documentation
+CPorter can now extract the docstring for a C function from its source code. If the C function has a docstring in the form of a block comment immediately preceding its declaration, CPorter can parse it and attach the docstring to the corresponding Python-wrapped function. 
+
+Example:
+```c
+/* Compute the sum of two integers. */
+int add(int a, int b) {
+    return a + b;
+}
+```
+In Python, you can access the docstring like this:
+
+```python
+cporter = CPorter()
+# ... Load the library and get the function ...
+add_function = cporter.get_function("my_library", "add")
+print(add_function.__doc__)
+```
+This will output:
+
+```python
+Compute the sum of two integers.
+```
+
+## Automatic Type Checking with ctypes
+CPorter automatically handles type checking and conversion for function arguments and return values. 
+When calling a C function wrapped by CPorter, you can pass Python values directly, and CPorter will attempt to convert them to the appropriate ctypes equivalents. 
+It also checks if the provided values are valid for the expected C types, and raises a helpful error message if there's a type mismatch or an invalid value.
+
+This makes it easier to work with C functions from Python, as you don't need to manually convert Python values to ctypes objects.
+```python
+cporter = CPorter()
+# ... Load the library and get the function ...
+add_function = cporter.get_function("my_library", "add")
+result = add_function(1, 2)  # You can pass Python values directly
+print(result)  # The result is automatically converted back to a Python value
+
+```
 ## Examples
 Call two difference functions with arguments example: `python examples/run.py`
 
