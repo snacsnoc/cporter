@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cporter"
-version = "0.0.1"
+version = "0.1.0"
 description = "Simplify running C in Python"
 authors = ["Easton Elliott <easton@geekness.eu>"]
 license = "GNU GPLv3"
