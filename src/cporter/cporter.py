@@ -83,7 +83,7 @@ class CPorter:
     # Reads the C source code to determine the argument and return types of the specified function
     def get_function_types(
         self, lib_name: str, func_name: str
-    ) -> Tuple[List[Optional[Type[ctypes._CData]]], Optional[Type[ctypes._CData]]]:
+    ) -> Tuple[List[Optional[Type[ctypes._SimpleCData]]], Optional[Type[ctypes._SimpleCData]]]:
 
         with open(f"examples/lib/{lib_name}.c", "r") as f:
             c_code = f.read()
