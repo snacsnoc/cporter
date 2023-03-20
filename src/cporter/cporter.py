@@ -30,6 +30,8 @@ class CFunctionWrapper:
         self.func = func
         self.argtypes = argtypes
         self.restype = restype
+        if restype is not None:
+            self.python_equivalent = restype().value.__class__
         self.__doc__ = doc
 
     def __call__(self, *args: Any) -> Any:
@@ -177,7 +179,9 @@ class CPorter:
         result = func(*converted_args)
 
         # Check return type
-        if func.restype is not None and not isinstance(result, func.restype):
+        if func.restype is not None and not isinstance(result, func.restype) and not isinstance(
+            result, c_function.restype.python_equivalent
+        ):
             raise TypeError(
                 f"Return value of function '{func_name}' in library '{lib_name}' "
                 f"must be of type '{func.restype.__name__}', but received '{type(result).__name__}'."
