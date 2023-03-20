@@ -4,13 +4,15 @@ import os
 import subprocess
 import time
 import timeit
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TypeVar
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TypeVar, Type
+
+T = TypeVar("T")
 
 
 class CPorter:
     def __init__(self) -> None:
         self.libraries: Dict[str, ctypes.CDLL] = {}
-        self.type_map: Dict[str, Union[None, type(ctypes._SimpleCData)]] = {
+        self.type_map: Dict[str, Union[None, type[ctypes._SimpleCData]]] = {
             "int": ctypes.c_int,
             "unsigned int": ctypes.c_uint,
             "long": ctypes.c_long,
@@ -41,7 +43,7 @@ class CPorter:
     def compile_library(self, lib_name: str) -> None:
         result = subprocess.run(
             ["gcc", "-shared", "-o", f"{lib_name}.so", f"{self.lib_path}/{lib_name}.c"],
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         )
 
         if result.returncode != 0:
@@ -73,14 +75,16 @@ class CPorter:
         argtypes, restype = self.get_function_types(lib_name, func_name)
         # get our callable function from ctypes
         func = lib.__getattr__(func_name)
-        func.argtypes = argtypes
+        # Filter out None values
+        func.argtypes = [t for t in argtypes if t is not None]
         func.restype = restype
         return func
 
     # Reads the C source code to determine the argument and return types of the specified function
     def get_function_types(
-            self, lib_name: str, func_name: str
-    ) -> Tuple[List[Optional[type(ctypes._SimpleCData)]], Optional[type(ctypes._SimpleCData)]]:
+        self, lib_name: str, func_name: str
+    ) -> Tuple[List[Optional[Type[ctypes._CData]]], Optional[Type[ctypes._CData]]]:
+
         with open(f"examples/lib/{lib_name}.c", "r") as f:
             c_code = f.read()
 
@@ -103,7 +107,9 @@ class CPorter:
         func = self.get_function(lib_name, func_name)
         return func(*args)
 
-    def profile_function(self, lib_name: str, func_name: str, *args) -> Tuple[Any, float]:
+    def profile_function(
+        self, lib_name: str, func_name: str, *args
+    ) -> Tuple[Any, float]:
         start_time = time.perf_counter()
         result = self.execute_function(lib_name, func_name, *args)
         end_time = time.perf_counter()
@@ -111,7 +117,10 @@ class CPorter:
         elapsed_time = end_time - start_time
         return result, elapsed_time
 
-    def profile_python_function(self, func: Callable[..., TypeVar("T")], *args: Any) -> Tuple[TypeVar("T"), float]:
+
+    def profile_python_function(
+        self, func: Callable[..., T], *args: Any
+    ) -> Tuple[T, float]:
         start_time = timeit.default_timer()
         result = func(*args)
         elapsed_time = timeit.default_timer() - start_time
